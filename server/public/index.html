@@ -1,0 +1,290 @@
+<html>
+
+<head>
+    <title>Snap & Translate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-qriously@1.1.1/dist/vue-qriously.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootswatch/4.1.2/sketchy/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-eMbzXAE+yF1x9LEY1wQuBzy7oI6r2HnqXl7QXbke0y9XtaUtCq8O/nPH9qKgLbkN" crossorigin="anonymous">
+
+
+    <link href="https://stackpath.bootstrapcdn.com/bootswatch/4.1.3/cerulean/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-qVp3sGZJcZdk20BIG6O0Sb0sYRyedif3+Z8bZtQueBW/g7Dp67a0XdiMmmWCCm82" crossorigin="anonymous">
+</head>
+
+<body>
+
+    <div class="container">
+        <div id="app">
+            <div class="row">
+                <div class="col-sm-12">
+                <h2> <img src="ibmDeveloper.jpg" width="50" alt="IBM Developer" />
+                    Snap & Translate
+                </h2>
+
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="form-group" col-sm-12 col-md-6>
+                        <label>Select Source</label>
+                        <select v-model="src_selected" class="form-control">
+                                <option v-for="option in options" :value="option">{{option.text}}</option>
+                        </select>
+                        </label>
+                        
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group" col-sm-12 col-md-6>
+                        <label>Select Traget</label>
+                        <select v-model="target_selected" class="form-control">
+                                <option v-for="option in target_options" :value="option">{{option.text}}</option>
+                        </select>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="row">
+                <div class="card border-info col-sm-12 col-md-12 col-xs-12">
+                    <div class="card-header"> --- Photo --- 認識させる写真 </div>
+                    <div class="card-body">
+
+                        <div id="preview">
+                            <img v-if="fileurl" :src="fileurl" width="300" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+
+
+                <div class="form-group">
+
+
+
+                    <input type="file" @change="onFileChange" class="form-control-file" name="inputFile" accept="image/*"
+                        aria-describedby="fileHelp">
+                    <small id="fileHelp" class="form-text text-muted">上のボタンをクリックして写真を選ぶか、クリック後カメラボタンをクリックし撮影して上記に写真を表示させてください</small>
+
+                </div>
+            </div>
+
+
+            <div class="row">
+
+                <button type="button" @click="onDetectImage" class="btn btn-primary">翻訳&分析</button>
+
+
+            </div>
+            <div class="row">
+                <div class="col-sm-5" v-show="loadingDetectImage">
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped  bg-danger progress-bar-animated" role="progressbar"
+                            aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                            Loading......
+
+                        </div>
+                    </div>
+                </div>
+
+
+                <div v-show="!loadingDetectImage && displayResults1">
+                    
+                    <p v-show="isError"> 
+                        <span v-html="errorMessage"></span>    
+                    </p>
+                    
+                    <p v-show="answerDetectImage.ocropt !=''">
+                        <h2 v-show="answerDetectImage.ocropt !=''">OCR Response</h2>
+                        <span v-html="answerDetectImage.ocropt"></span>
+                    </p>
+
+                    <p v-show="answerDetectImage.data != ''">
+                        <h2 v-show="answerDetectImage.data != ''">Translation</h2>
+                        <span v-html="answerDetectImage.data"></span>
+                    </p>
+
+                    <p v-show="answerDetectImage.sentiment != ''">
+                        <h2 v-show="answerDetectImage.sentiment != ''">Overall Sentiment</h2>
+                        <span v-html="answerDetectImage.sentiment"></span>
+                    </p>
+
+                   
+                    <h2 v-show="answerDetectImage.sentiment != ''">Emotion</h2>
+                    <p v-show="answerDetectImage.sentiment != ''">
+                        sadness: <span v-html="answerDetectImage.emotion.sadness"></span><br/>
+                        joy: <span v-html="answerDetectImage.emotion.joy"></span><br/>
+                        fear: <span v-html="answerDetectImage.emotion.fear"></span><br/>
+                        disgust: <span v-html="answerDetectImage.emotion.disgust"></span><br/>
+                        anger: <span v-html="answerDetectImage.emotion.anger"></span><br/>
+                    </p>
+
+
+
+
+                    
+                </div>
+            </div>
+
+            
+            
+
+            <div class="row">
+                <p> </p>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12 col-md-12 col-xs-12">
+                    このページのQRコード：<span v-html="url_value"></span>
+                </div>
+                <div class="col-sm-12 col-md-12 col-xs-12">
+                    <qriously :value="url_value" />
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                fileurl: null,
+                url_value: location.href,
+                file: null,
+                src_selected: {text: 'Japanese', value:  "jpn", datamodelid: "ja-en"  },
+                options: [
+                    {text: 'Arabic', value: "ara", datamodelid: "ar-en"  },
+                    {text: 'Czech',  value: "ces", datamodelid: "cs-en"  },
+                    {text: 'Danish', value:  "dan", datamodelid: "da-en"  },
+                    {text: 'Dutch',  value:  "nld", datamodelid: "nl-en"  },
+                    {text: 'English',  value:  "eng", datamodelid: "na"  },
+                    {text: 'Finnish', value:  "fin", datamodelid: "fi-en"  },
+                    {text: 'French', value:  "fra", datamodelid: "fr-en"  },
+                    {text: 'German', value:  "deu", datamodelid: "de-en"  },
+                    {text: 'Hindi', value:  "hin", datamodelid: "hi-en"  },
+                    {text: 'Italian', value:  "ita", datamodelid: "it-en"  },
+                    {text: 'Japanese', value:  "jpn", datamodelid: "ja-en"  },
+                    {text: 'Korean', value:  "kor", datamodelid: "ko-en"  },
+                    {text: 'Polish', value:  "pol", datamodelid: "pl-en"  },
+                    {text: 'Portuges', value:  "por", datamodelid: "pt-en"  },
+                    {text: 'Russian', value:  "rus", datamodelid: "ru-en"  },
+                    {text: 'Spanish', value:  "spa", datamodelid: "es-en"  },
+                    {text: 'Swedish', value:  "swe", datamodelid: "sv-en"  },
+                    {text: 'Turkish', value:  "tur", datamodelid: "tr-en"  }
+                ],
+                target_selected: {text: 'English', value: "en"},
+                target_options: [
+                    {text: 'English', value: "en"}
+                ],
+                errorMessage: null,
+                loadingClassifyImages: false,
+                answerClassifyImages: null,
+                loadingDetectImage: false,
+                
+                answerDetectImage: {
+                    ocropt: null, data: null, sentiment: null, 
+                    emotion: {sadness: null, joy: null, fear: null, disgust: null, anger: null}
+                },
+                
+                
+                displayResults1: false,
+                isError: false,
+                
+                imageClasses: [],
+                imageCustomClasses: []
+
+
+            },
+            methods: {
+
+                selectedSrc(e){
+                    this.src_lang = e.target.value;
+                    this.model_id = e.target.datamodelid;
+                    
+                },
+
+                onSourceChange(e) {
+                    this.source = e.target.source;
+                    this.fileurl = URL.createObjectURL(this.file);
+                    
+                    this.displayResults1 = false
+                 
+                    this.isError = false
+                    this.errorMessage = null
+                },
+
+                onFileChange(e) {
+                    this.file = e.target.files[0];
+                    this.fileurl = URL.createObjectURL(this.file);
+                    this.displayResults1 = false
+                    
+                    this.isError = false
+                    this.errorMessage = null
+                },
+
+                onDetectImage(e) {
+
+                    this.detectImage();
+                },
+
+               
+                async detectImage() {
+                    var url = "./uploadpic"
+
+                    var params = new FormData();
+                    console.log(this.src_selected.text);
+                    params.append('file', this.file);
+                    params.append('l', this.src_selected.value);
+                    params.append('modelid', this.src_selected.datamodelid);
+
+                    try {
+                        this.loadingDetectImage = true
+
+                        const response = await axios.post(url, params)
+                        console.log('------Response------');
+                        console.log(response);
+                        console.log('------Response End------');
+
+                        this.answerDetectImage = response.data;
+                        
+
+                        if (response.data.errMsg == '') {
+                            this.answerDetectImage.emotion = JSON.parse(this.answerDetectImage.emotion);
+                            this.isError = false;
+                            
+                        } else { 
+                            this.errorMessage = response.data.errMsg;
+                            this.isError = true;
+                        }
+                        console.log(response);
+                        //console.log(this.answerDetectImage);
+                        
+
+
+                    } catch (e) {
+                        console.log('ERR!');
+                        console.log(e);
+                        this.answer = 'ERR!:' + e
+                    } finally {
+                        this.loadingDetectImage = false
+                        this.displayResults1 = true
+                    }
+                }
+            }
+        })
+
+    </script>
+
+</body>
+
+</html>
