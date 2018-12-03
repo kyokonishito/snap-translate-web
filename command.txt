@@ -1,0 +1,92 @@
+コマンド一覧(コピペ用)
+< > のついている部分は自分の値に変更して実行してください。
+( )はコメントです。
+
+2. レポジトリのClone
+git clone https://github.com/kyokonishito/snap-translate-web.git
+cd snap-translate-web  
+
+3. IBM Cloudへのログインと設定
+ic login
+ic target --cf
+
+4.  IBM Cloud コンテナレジストリ のセットアップ
+ic cr namespace-add <namespace>
+
+(設定したnamespaceを以下にコピペしてください)
+<namespace>: <ここにコピペ>
+
+5. ワーカー・ノードのデプロイメントが完了したことを確認
+ic cs workers mycluster
+
+6. クラスター環境のセットアップ
+ic cs cluster-config mycluster
+(上記で出力されたexportまたはSETコマンドをコピペして実行)
+kubectl version --short
+
+7. クラスターにサービスを追加
+(<service_name>には例と同じものにしてあります。LanguageTranslator01、NaturalLanguageUnderstanding01)
+ic service create language_translator lite LanguageTranslator01
+ic service create natural-language-understanding free NaturalLanguageUnderstanding01
+
+(<language_translate_service_name>はLanguageTranslator01としています）
+ic cs cluster-service-bind --cluster mycluster --namespace default --service LanguageTranslator01
+
+(出力されたSecret Nameを以下にコピペしてください)
+language_translate_service　Secret Name: <ここにコピペ>
+
+(<nlu_service_name>はNaturalLanguageUnderstanding01としています）
+ic cs cluster-service-bind --cluster mycluster --namespace default --service NaturalLanguageUnderstanding01
+
+(出力されたSecret Nameを以下にコピペしてください)
+nlu_service　Secret Name: <ここにコピペ>
+
+kubectl get secrets --namespace=default
+
+8. Dockerイメージをビルド
+cd server
+
+(windowsの場合)
+copy env.sample .env
+(macの場合)
+cp env.sample .env
+
+(<namespace>は4でコピペしたご自身のnamespaceに置き換えてください、最後のピリオドを忘れずに!)
+ic cr build -t registry.ng.bluemix.net/<namespace>/snaptranslateweb:v1 .
+
+9. Kubernates マニフェストファイルwatson-lang-trans.yml の編集
+(コンテナレジストリの名前空間確認)
+ic cr namespace-list 
+
+10. Kubernates マニフェストファイルwatson-lang-trans-dockerhub.yml の作成
+(Winの場合)$ copy watson-lang-trans.yml watson-lang-trans-dockerhub.yml 
+(macの場合)$ cp watson-lang-trans.yml watson-lang-trans-dockerhub.yml 
+
+ビルド実行中の場合 のみ以下を実施
+(新しいターミナル、またはコマンドウィンドウを開き、以下のコマンドを実行してください)
+ic cs cluster-config mycluster
+(上記で出力されたexportまたはSETコマンドをコピペして実行)
+kubectl version --short
+
+11.クラスターへのアプリケーションデプロイ
+(ご自身で作成したイメージがビルド完了している場合)
+kubectl apply -f watson-lang-trans.yml
+
+(ご自身で作成したイメージがビルド未完了でDockerHub上のサンプルを使用する場合)
+kubectl apply -f watson-lang-trans-dockerhub.yml
+
+12.アプリケーションの動作確認
+ic cs workers mycluster
+
+http://<IPアドレス>:30047 
+
+13.アプリケーションのアップデート
+(DockerHub上のサンプルイメージで更新)
+kubectl set image deployment/deploy-watson-tesseract-deployment deploy-watson-tesseract=nishito/snaptranslateweb:v0
+
+(ご自身で作成したイメージに更新。<namespace>は4でコピペしたご自身のnamespaceに置き換えてください)
+kubectl set image deployment/deploy-watson-tesseract-deployment deploy-watson-tesseract=registry.ng.bluemix.net/<namespace>/snaptranslateweb:v1
+
+14.アプリケーションの削除
+kubectl delete deployment deploy-watson-tesseract-deployment
+kubectl delete service deploy-watson-tesseract-service
