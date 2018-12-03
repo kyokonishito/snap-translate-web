@@ -1,6 +1,10 @@
 FROM node:8
 RUN apt-get update
 
+RUN apt-get remove -y mysql-common  && rm -rf /etc/mysql
+RUN apt update && apt -y upgrade openssl
+RUN apt update && apt -y upgrade perl
+
 RUN apt-get -q -y install libleptonica-dev
 RUN apt-get -q -y install libtesseract3 libtesseract-dev
 RUN apt-get update && apt-get -q -y install tesseract-ocr
@@ -10,6 +14,7 @@ RUN apt-get -q -y install git
 RUN apt-get -q -y install gcc
 
 COPY app.js .
+COPY tools.js .
 COPY package.json .
 COPY .env .
 RUN mkdir /public
