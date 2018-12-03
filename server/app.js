@@ -9,6 +9,7 @@ const tesseract = require("node-tesseract");
 const LanguageTranslatorV3 = require("watson-developer-cloud/language-translator/v3");
 const NaturalLanguageUnderstandingV1 = require('watson-developer-cloud/natural-language-understanding/v1.js');
 require('dotenv').config();
+var tools = require('./tools');
 
 let languageTranslator = new LanguageTranslatorV3({
   version: "2018-05-01"
@@ -62,25 +63,13 @@ application.post("/uploadpic", function (req, result) {
   form.parse(req, function (err, fields, files) {
     if (err) {
       console.log(err);
-      result.json({
-        data: '',
-        ocropt: '',
-        sentiment: '',
-        emotion: { sadness: '', joy: '', fear: '', disgust: '', anger: '' },
-        errMsg: 'Error: No Parameters'
-      });
+      tools.setError(result,'Error: No Parameters' )
     } else {
       const fieldValue = JSON.parse(JSON.stringify(fields));
       console.log(fieldValue);
       if (!Object.keys(fields).length) {
-        result.json({
-          data: '',
-          ocropt: '',
-          sentiment: '',
-          emotion: { sadness: '', joy: '', fear: '', disgust: '', anger: '' },
-          errMsg: 'Error: No Parameters'
-        });
-        console.log('Error: No file');
+        tools.setError(result,'Error: No Parameters' )
+        console.log('Error: No Parameters');
         return;
       }
       const options = {
@@ -90,13 +79,7 @@ application.post("/uploadpic", function (req, result) {
 
       console.log(files);
       if ( !Object.keys(files).length){
-        result.json({
-          data: '',
-          ocropt: '',
-          sentiment: '',
-          emotion: {sadness: '', joy: '', fear: '', disgust: '', anger: ''},
-          errMsg: 'Error: No file'
-        });
+        tools.setError(result,'Error: No file' )
         console.log('Error: No file');
         return;
 
@@ -108,31 +91,24 @@ application.post("/uploadpic", function (req, result) {
       tesseract.process(imgPath, options, function (err, ocrtext) {
         if (err) {
           console.log(err);
-          result.json({
-            data: '',
-            ocropt: '',
-            sentiment: '',
-            emotion: {sadness: '', joy: '', fear: '', disgust: '', anger: ''},
-            errMsg: 'Error: OCR --' + err
-          });
-        } else {
+          tools.setError(result,'Error: OCR --' + err )
+        } else  if (ocrtext.trim().length == 0){
+          console.log('Error: Can not find any characters in the image.');
+          tools.setError(result,'Error: Can not find any characters in the image.' )
+        }  else {
           console.log('-------ocrtext----------');
           console.log(ocrtext);
+          
           const parameters = {
             text: ocrtext.toLowerCase(),
             model_id: fieldValue.modelid
           };
+          
           if (options.l != 'eng') {
             languageTranslator.translate(parameters, function (error, response) {
               if (error) {
                 console.log(error);
-                result.json({
-                  data: '',
-                  ocropt: ocrtext,
-                  sentiment: '',
-                  emotion: {sadness: '', joy: '', fear: '', disgust: '', anger: ''},
-                  errMsg: 'Error: languageTranslator --' + error
-                });
+                tools.setError(result,'Error: languageTranslator --' + error )
               } else {
                 console.log('-------languageTranslator response----------');
                 console.log(JSON.stringify(response, null, 4));
@@ -152,14 +128,7 @@ application.post("/uploadpic", function (req, result) {
                 natural_language_understanding.analyze(params, function (err, nluresponse) {
                   if (err) {
                     console.log('error:', err);
-                    result.json({
-                      data: cleanString,
-                      ocropt: ocrtext,
-                      sentiment: '',
-                      emotion: {sadness: '', joy: '', fear: '', disgust: '', anger: ''},
-                      errMsg: 'Error: natural_language_understanding --' + err
-                    });
-
+                    tools.setError(result,'Error: natural_language_understanding --' + err )
                   } else {
                     const sentresp = JSON.stringify(nluresponse.sentiment.document.label);
                     console.log('-------natural_language_understanding response----------');
@@ -167,15 +136,8 @@ application.post("/uploadpic", function (req, result) {
                     const emotoutput = JSON.stringify(nluresponse.emotion.document.emotion);
                     console.log('-------emotoutput----------');
                     console.log(emotoutput);
-                    result.json({
-                      data: cleanString,
-                      ocropt: ocrtext,
-                      sentiment: sentresp,
-                      emotion: emotoutput,
-                      errMsg: ''
-                    });
+                    tools.setResult(result, cleanString, ocrtext, sentresp, emotoutput, '')
                     console.log('-------result----------');
-                    console.log(result);
                   }
                 });
               }
@@ -197,14 +159,7 @@ application.post("/uploadpic", function (req, result) {
             natural_language_understanding.analyze(params, function (err, nluresponse) {
               if (err) {
                 console.log('error:', err);
-                result.json({
-                  data: '',
-                  ocropt: ocrtext,
-                  sentiment: '',
-                  emotion: {sadness: '', joy: '', fear: '', disgust: '', anger: ''},
-                  errMsg: 'Error: natural_language_understanding --' + err
-                });
-
+                tools.setError(result,'Error: natural_language_understanding --' + err )
               } else {
                 const sentresp = JSON.stringify(nluresponse.sentiment.document.label);
                 console.log('-------natural_language_understanding response----------');
@@ -212,15 +167,8 @@ application.post("/uploadpic", function (req, result) {
                 const emotoutput = JSON.stringify(nluresponse.emotion.document.emotion);
                 console.log('-------emotoutput----------');
                 console.log(emotoutput);
-                result.json({
-                  data: '',
-                  ocropt: ocrtext,
-                  sentiment: sentresp,
-                  emotion: emotoutput,
-                  errMsg: ''
-                });
+                tools.setResult(result, cleanString, ocrtext, sentresp, emotoutput, '')
                 console.log('-------result----------');
-                console.log(result);
               }
             });
 
