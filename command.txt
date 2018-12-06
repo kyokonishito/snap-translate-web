@@ -7,36 +7,37 @@ git clone https://github.com/kyokonishito/snap-translate-web.git
 cd snap-translate-web  
 
 3. IBM Cloudへのログインと設定
-ic login
-ic target --cf
+ibmcloud login
+(エンドポイントの選択が表示された場合は 2. us-southを選択してください)
+ibmcloud target --cf
 
 4.  IBM Cloud コンテナレジストリ のセットアップ
-ic cr namespace-add <namespace>
+ibmcloud cr namespace-add <namespace>
 
 (設定したnamespaceを以下にコピペしてください)
 <namespace>: <ここにコピペ>
 
 5. ワーカー・ノードのデプロイメントが完了したことを確認
-ic cs workers mycluster
+ibmcloud cs workers mycluster
 
 6. クラスター環境のセットアップ
-ic cs cluster-config mycluster
+ibmcloud cs cluster-config mycluster
 (上記で出力されたexportまたはSETコマンドをコピペして実行)
 kubectl version --short
 
 7. クラスターにサービスを追加
 (<service_name>には例と同じものにしてあります。LanguageTranslator01、NaturalLanguageUnderstanding01)
-ic service create language_translator lite LanguageTranslator01
-ic service create natural-language-understanding free NaturalLanguageUnderstanding01
+ibmcloud service create language_translator lite LanguageTranslator01
+ibmcloud service create natural-language-understanding free NaturalLanguageUnderstanding01
 
 (<language_translate_service_name>はLanguageTranslator01としています）
-ic cs cluster-service-bind --cluster mycluster --namespace default --service LanguageTranslator01
+ibmcloud cs cluster-service-bind --cluster mycluster --namespace default --service LanguageTranslator01
 
 (出力されたSecret Nameを以下にコピペしてください)
 language_translate_service　Secret Name: <ここにコピペ>
 
 (<nlu_service_name>はNaturalLanguageUnderstanding01としています）
-ic cs cluster-service-bind --cluster mycluster --namespace default --service NaturalLanguageUnderstanding01
+ibmcloud cs cluster-service-bind --cluster mycluster --namespace default --service NaturalLanguageUnderstanding01
 
 (出力されたSecret Nameを以下にコピペしてください)
 nlu_service　Secret Name: <ここにコピペ>
@@ -52,11 +53,11 @@ copy env.sample .env
 cp env.sample .env
 
 (<namespace>は4でコピペしたご自身のnamespaceに置き換えてください、最後のピリオドを忘れずに!)
-ic cr build -t registry.ng.bluemix.net/<namespace>/snaptranslateweb:v1 .
+ibmcloud cr build -t registry.ng.bluemix.net/<namespace>/snaptranslateweb:v1 .
 
 9. Kubernates マニフェストファイルwatson-lang-trans.yml の編集
 (コンテナレジストリの名前空間確認)
-ic cr namespace-list 
+ibmcloud cr namespace-list 
 
 10. Kubernates マニフェストファイルwatson-lang-trans-dockerhub.yml の作成
 (Winの場合)$ copy watson-lang-trans.yml watson-lang-trans-dockerhub.yml 
@@ -64,7 +65,7 @@ ic cr namespace-list
 
 ビルド実行中の場合 のみ以下を実施
 (新しいターミナル、またはコマンドウィンドウを開き、以下のコマンドを実行してください)
-ic cs cluster-config mycluster
+ibmcloud cs cluster-config mycluster
 (上記で出力されたexportまたはSETコマンドをコピペして実行)
 kubectl version --short
 
@@ -76,10 +77,11 @@ kubectl apply -f watson-lang-trans.yml
 kubectl apply -f watson-lang-trans-dockerhub.yml
 
 12.アプリケーションの動作確認
-ic cs workers mycluster
+ibmcloud cs workers mycluster
 
 http://<IPアドレス>:30047 
 
+(以下はオプション)
 13.アプリケーションのアップデート
 (DockerHub上のサンプルイメージで更新)
 kubectl set image deployment/deploy-watson-tesseract-deployment deploy-watson-tesseract=nishito/snaptranslateweb:v0
@@ -90,3 +92,7 @@ kubectl set image deployment/deploy-watson-tesseract-deployment deploy-watson-te
 14.アプリケーションの削除
 kubectl delete deployment deploy-watson-tesseract-deployment
 kubectl delete service deploy-watson-tesseract-service
+
+15.イメージのの削除
+(<namespace>は4でコピペしたご自身のnamespaceに置き換えてください)
+ibmcloud cr image-rm registry.ng.bluemix.net/<namespace>/snaptranslateweb:v1
