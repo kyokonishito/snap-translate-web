@@ -26,9 +26,10 @@ spec:
     spec:
       containers:
       - name: deploy-watson-tesseract
-        image: registry.ng.bluemix.net/<namespace>/<imagename>:<tag>
+        image: registry.ng.bluemix.net/<namespace>/snaptranslateweb:v1
         ports:
         - containerPort: 3000
+#        imagePullPolicy: Always
         volumeMounts:
             - mountPath: /opt/lt-service-bind
               name: service-bind-volume
@@ -38,8 +39,8 @@ spec:
         - name: service-bind-volume
           secret:
             defaultMode: 420
-            secretName: <secretName-binding-ocrlangtranslator>
+            secretName: <secretName-binding-langtranslator>
         - name: nluservice-bind-volume
           secret:
             defaultMode: 420
-            secretName: <secretName-binding-ocrnlu>
+            secretName: <secretName-binding-nlu>
