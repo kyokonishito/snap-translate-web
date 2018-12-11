@@ -96,3 +96,9 @@ kubectl delete service deploy-watson-tesseract-service
 15.イメージのの削除
 (<namespace>は4でコピペしたご自身のnamespaceに置き換えてください)
 ibmcloud cr image-rm registry.ng.bluemix.net/<namespace>/snaptranslateweb:v1
+
+16.サービスのアンバインド
+(<language_translate_service_name>はLanguageTranslator01としています）
+(<nlu_service_name>はNaturalLanguageUnderstanding01としています）
+ibmcloud cs cluster-service-unbind --cluster mycluster --namespace default --service LanguageTranslator01
+ibmcloud cs cluster-service-unbind --cluster mycluster --namespace default --service NaturalLanguageUnderstanding01
