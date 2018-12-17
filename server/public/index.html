@@ -23,23 +23,24 @@
             </div>
 
             <div class="row">
-                <div class="col">
-                    <div class="form-group" col-sm-12 col-md-6>
+                <div class="col  col-sm-5 col-12">
+                    <div class="form-group">
                         <label>Select Source</label>
                         <select v-model="src_selected" class="form-control">
                                 <option v-for="option in options" :value="option">{{option.text}}</option>
                         </select>
-                        </label>
-                        
                     </div>
                 </div>
-                <div class="col">
-                    <div class="form-group" col-sm-12 col-md-6>
-                        <label>Select Traget</label>
+                <div class="col col-sm-1 col-12 text-center">
+                    →
+                </div>
+                <div class="col col-sm-5 col-12">
+                    <div class="form-group">
+                        <label>Select Target</label>
                         <select v-model="target_selected" class="form-control">
                                 <option v-for="option in target_options" :value="option">{{option.text}}</option>
                         </select>
-                        </label>
+                
                     </div>
                 </div>
             </div>
