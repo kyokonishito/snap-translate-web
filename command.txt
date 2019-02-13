@@ -8,7 +8,7 @@ cd snap-translate-web
 
 3. IBM Cloudへのログインと設定
 ibmcloud login
-(エンドポイントの選択が表示された場合は 2. us-southを選択してください)
+(エンドポイントの選択が表示された場合は 5. us-southを選択してください)
 ibmcloud target --cf
 
 4.  IBM Cloud コンテナレジストリ のセットアップ
