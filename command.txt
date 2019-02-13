@@ -59,9 +59,14 @@ ibmcloud cr build -t registry.ng.bluemix.net/<namespace>/snaptranslateweb:v1 .
 (コンテナレジストリの名前空間確認)
 ibmcloud cr namespace-list 
 
-10. Kubernates マニフェストファイルwatson-lang-trans-dockerhub.yml の作成
+10. Kubernates マニフェストファイルwatson-lang-trans-dockerhub.ymlの作成(1)
 (Winの場合)$ copy watson-lang-trans.yml watson-lang-trans-dockerhub.yml 
-(macの場合)$ cp watson-lang-trans.yml watson-lang-trans-dockerhub.yml 
+(macの場合)$ cp watson-lang-trans.yml watson-lang-trans-dockerhub.yml
+
+10. Kubernates マニフェストファイルwatson-lang-trans-dockerhub.ymlの作成(2)
+watson-lang-trans-dockerhub.yml 29行目を以下に変更
+image: nishito/snaptranslateweb:v0
+
 
 ビルド実行中の場合 のみ以下を実施
 (新しいターミナル、またはコマンドウィンドウを開き、以下のコマンドを実行してください)
