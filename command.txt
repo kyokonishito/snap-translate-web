@@ -33,13 +33,13 @@ ibmcloud service create natural-language-understanding free NaturalLanguageUnder
 (<language_translate_service_name>はLanguageTranslator01としています）
 ibmcloud cs cluster-service-bind --cluster mycluster --namespace default --service LanguageTranslator01
 
-(出力されたSecret Nameを以下にコピペしてください)
+(出力されたSecret Name(機密名)を以下にコピペしてください)
 language_translate_service　Secret Name: <ここにコピペ>
 
 (<nlu_service_name>はNaturalLanguageUnderstanding01としています）
 ibmcloud cs cluster-service-bind --cluster mycluster --namespace default --service NaturalLanguageUnderstanding01
 
-(出力されたSecret Nameを以下にコピペしてください)
+(出力されたSecret Name(機密名)を以下にコピペしてください)
 nlu_service　Secret Name: <ここにコピペ>
 
 kubectl get secrets --namespace=default
@@ -87,14 +87,14 @@ ibmcloud cs workers mycluster
 http://<IPアドレス>:30047 
 
 (以下はオプション)
-13.アプリケーションのアップデート
+13.アプリケーションのアップデート
 (DockerHub上のサンプルイメージで更新)
 kubectl set image deployment/deploy-watson-tesseract-deployment deploy-watson-tesseract=nishito/snaptranslateweb:v0
 
 (ご自身で作成したイメージに更新。<namespace>は4でコピペしたご自身のnamespaceに置き換えてください)
 kubectl set image deployment/deploy-watson-tesseract-deployment deploy-watson-tesseract=registry.ng.bluemix.net/<namespace>/snaptranslateweb:v1
 
-14.アプリケーションの削除
+14.アプリケーションの削除
 kubectl delete deployment deploy-watson-tesseract-deployment
 kubectl delete service deploy-watson-tesseract-service
 
