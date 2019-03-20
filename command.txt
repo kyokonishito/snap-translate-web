@@ -81,6 +81,9 @@ kubectl apply -f watson-lang-trans.yml
 (ご自身で作成したイメージがビルド未完了でDockerHub上のサンプルを使用する場合)
 kubectl apply -f watson-lang-trans-dockerhub.yml
 
+podの状況確認
+kubectl get pods
+
 12.アプリケーションの動作確認
 ibmcloud cs workers mycluster
 
